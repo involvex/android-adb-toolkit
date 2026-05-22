@@ -41,3 +41,17 @@ python3 server.py
 - `GET /api/device/<serial>/logcat` — live logcat stream
 
 See [API.md](API.md) for full endpoint documentation.
+
+## Android Config Monitor (Go)
+Real-time device configuration snapshot.
+
+```bash
+go run android-config-monitor.go --json
+```
+
+Features:
+- Real-time device properties
+- Settings snapshot (ADB, WiFi, Bluetooth, Airplane mode)
+- Build info (Android version, API level, security patch)
+- JSON output support
+
