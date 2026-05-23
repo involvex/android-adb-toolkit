@@ -64,3 +64,38 @@ Real-time device performance monitor: CPU, memory, battery, thermal, and process
 ./scripts/adb-device-monitor.sh --interval 2 --duration 60
 ```
 
+
+## 🔧 Advanced Tools
+
+### ADB Session Manager
+**File:** `tools/adb-session-manager.py` (Python)
+
+Monitor and manage multiple concurrent ADB sessions with detailed device profiling.
+
+**Features:**
+- Discover all connected devices (USB + Wireless)
+- Get device info: model, Android version, battery level
+- Track active port forwarding
+- Export session data to JSON
+- Verbose logging for troubleshooting
+
+**Usage:**
+```bash
+python3 tools/adb-session-manager.py              # Print session summary
+python3 tools/adb-session-manager.py -v           # Verbose output
+python3 tools/adb-session-manager.py -j sessions.json  # Export to JSON
+```
+
+**Example Output:**
+```
+🔌 ADB Session Summary
+================================================================================
+
+📱 Pixel 7 (emulator-5554)
+   Status:        connected
+   Android:       14.0
+   Battery:       85%
+   Connection:    usb
+   Ports:         5555, 8080, 9999
+```
+
