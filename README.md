@@ -55,3 +55,12 @@ Features:
 - Build info (Android version, API level, security patch)
 - JSON output support
 
+
+## adb-device-monitor.sh
+Real-time device performance monitor: CPU, memory, battery, thermal, and process tracking.
+
+**Usage:**
+```bash
+./scripts/adb-device-monitor.sh --interval 2 --duration 60
+```
+
