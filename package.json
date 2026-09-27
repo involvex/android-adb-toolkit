@@ -4,6 +4,7 @@
   "private": true,
   "description": "Web-based Android ADB control panel (Python server). Optional Node CLI lives in ./cli/",
   "scripts": {
+    "setup": "bun setup.ts",
     "start": "python3 server.py",
     "cli": "node cli/index.js",
     "test": "python3 -m unittest discover -s tests -v"

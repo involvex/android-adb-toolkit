@@ -23,6 +23,10 @@
 
 Documented in [API.md](API.md). Health check: `GET /api/health`.
 
+## Local setup
+
+- `bun setup.ts` (or `python3 setup.py`) — verify Python/layout/`adb`, print start URL
+
 ## CLI
 
 - `python3 -m adb_toolkit` — canonical Python CLI (devices, info, packages, shell, screenshot, install)

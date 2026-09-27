@@ -4,10 +4,19 @@ Web-based ADB control panel — manage Android devices from your browser.
 
 ## How to run
 
+### Setup (recommended first)
+
+```bash
+bun setup.ts
+# or: bun run setup
+# Fallback (no Bun): python3 setup.py
+```
+
+Checks Python 3.8+, verifies the repo layout / imports, looks for `adb` on your PATH, and prints the start command. The web server itself needs **no pip packages** (stdlib only).
+
 ### 1. Web UI + API (primary, local device control)
 
 ```bash
-# Requires: Python 3.8+ and `adb` on your PATH
 python3 server.py
 
 # Open http://127.0.0.1:8000/
