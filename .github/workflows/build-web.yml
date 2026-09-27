@@ -4,9 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "index.html"
+      - "static/**"
+      - "adb_toolkit/**"
       - "server.py"
-      - "docker-compose.yml"
+      - "Dockerfile"
   workflow_dispatch:
 
 jobs:
@@ -19,7 +20,7 @@ jobs:
           docker build -t android-adb-toolkit:latest .
           docker save android-adb-toolkit:latest | gzip > toolkit.tar.gz
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: toolkit.tar.gz

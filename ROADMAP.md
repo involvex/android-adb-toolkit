@@ -9,31 +9,35 @@ Features planned and in development.
 - [x] Settings editor (read/write)
 - [x] File manager (pull/push)
 - [x] Logcat viewer
-- [ ] Screenshots in UI
-- [ ] Terminal-like shell executor
+- [x] Screenshots in UI
+- [x] Terminal-like shell executor
 
-## v1.1 (Q2 2026)
-- Batch APK installer from folder
-- APK unpacker / decompiler integration
-- System props editor with search
-- Network monitor (TCP connections)
-- Real-time battery graph
-- One-click debloat profiles
+## v1.1
+- [x] Dark mode for web UI
+- [x] Mobile-responsive design
+- [x] Docker container for easy setup
+- [x] REST API for scripting (documented in API.md)
+- [ ] Batch APK installer from folder (UI)
+- [ ] System props editor with search
+- [ ] Real-time battery graph
+- [ ] One-click debloat profiles
 
-## v2.0 (Q3 2026)
-- Multi-device dashboard
+## v2.0 (later)
+- Multi-device dashboard polish
 - App permission audit with risk scoring
 - Notification viewer + filter
-- Built-in Frida hook launcher
-- Wireless ADB pairing UI
-- Cloud sync (optional)
+- Live logcat WebSocket stream
+- Backup/restore manager
+- ~~Built-in Frida hook launcher~~ (deferred — out of scope for core toolkit)
+- ~~Cloud sync~~ (deferred)
 
 ## Community Requests
-- [ ] Dark mode for web UI
-- [ ] Mobile-responsive design
-- [ ] Docker container for easy setup
-- [ ] REST API for scripting
+- [x] Dark mode for web UI
+- [x] Mobile-responsive design
+- [x] Docker container for easy setup
+- [x] REST API for scripting
 - [ ] Backup/restore manager
 
 ---
-Contribute ideas: [GitHub Issues](https://github.com/OutrageousStorm/android-adb-toolkit/issues)
+
+Contribute ideas: [GitHub Issues](https://github.com/involvex/android-adb-toolkit/issues)

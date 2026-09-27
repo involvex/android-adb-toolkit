@@ -1,46 +1,30 @@
 # ADB Toolkit Features
 
-## Web UI Dashboard (HTML/JS)
-- Real-time device info (CPU, RAM, battery, network)
-- Package manager — install/uninstall/clear
-- File browser — push/pull files
-- Screen control — brightness, display density, orientation
-- Quick toggle buttons — WiFi, Bluetooth, airplane mode, doze
-- App launcher with search
-- Screenshot & screen record preview
+## Primary web UI (`python3 server.py` → http://127.0.0.1:8000)
 
-## ADB Server Requirements
+- Device selector (USB + wireless)
+- Device info (model, Android/API, battery)
+- Package list / uninstall / clear data
+- Screen control (tap, text, Home/Back/Power)
+- Screenshot preview in the browser
+- Shell executor (device `adb shell` only)
+- Wireless ADB pair / connect / disconnect
+- Logcat snapshot
+- Dark / light theme, responsive layout
+
+## REST API
+
+Documented in [API.md](API.md). Health check: `GET /api/health`.
+
+## Optional helpers
+
+- `wireless.py` — CLI wireless pair/connect
+- `tools/adb-session-manager.py` — multi-device session summary
+- `scripts/adb-device-monitor.sh` — CPU/memory/battery monitor
+
+## ADB requirement
+
 ```bash
-# Linux/Mac: adb daemon runs automatically
-# Windows: adb server included in SDK Platform Tools
-
-# Verify server is running:
 adb start-server
-adb devices  # should show connected device
-```
-
-## Endpoints (via adb forward)
-```
-GET  /device/info
-GET  /packages/list
-POST /packages/install
-POST /packages/uninstall
-GET  /files/list?path=/sdcard
-GET  /settings/get?key=screen_brightness
-POST /settings/put?key=screen_brightness&value=200
-GET  /screenshot
-POST /screen/tap?x=540&y=960
-POST /screen/text?input=hello
-```
-
-## Usage
-```bash
-# Start ADB server
-adb start-server
-
-# Forward web UI
-adb forward tcp:8080 tcp:8080
-
-# Open browser
-http://localhost:8080
+adb devices
 ```

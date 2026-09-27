@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "android-adb-toolkit"
+version = "1.1.0"
+description = "Web-based ADB control panel (Python server + browser UI)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "involvex" }]
+keywords = ["adb", "android", "toolkit"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+
+[project.scripts]
+adb-toolkit-server = "adb_toolkit.server:main"
+
+[tool.setuptools.packages.find]
+include = ["adb_toolkit*"]
+
+[tool.setuptools.package-data]
+adb_toolkit = []

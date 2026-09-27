@@ -1,171 +1,200 @@
 # ADB Toolkit API Reference
 
-All endpoints require a connected ADB device.
+Base URL (default): `http://127.0.0.1:8000`
 
-## Authentication
+Authentication: none (local process). Keep the bind address on localhost unless you intentionally expose it.
 
-None — runs locally on your machine.
+All JSON error responses look like:
 
-## Devices
-
-### List Devices
-```
-GET /api/devices
-```
-
-**Response:**
 ```json
-[
-  {"serial": "emulator-5554", "model": "Android Emulator", "android": "12"},
-  {"serial": "192.168.1.100:5555", "model": "OnePlus 9", "android": "13"}
-]
+{
+  "error": "device_not_found",
+  "message": "Device not found: emulator-5554",
+  "status": 404,
+  "details": "emulator-5554"
+}
+```
+
+Common `error` codes: `adb_missing` (503), `device_not_found` / `no_device` (404), `invalid_param` / `invalid_serial` / `invalid_json` (400), `timeout` / `command_failed` (500), `not_found` (404).
+
+---
+
+## Health
+
+### `GET /api/health`
+
+```json
+{ "status": "ok", "version": "1.1.0", "adb_available": true }
 ```
 
 ---
 
-## Device Info
+## Devices
 
-### Get Device Information
-```
-GET /api/device/<serial>/info
-```
+### `GET /api/devices`
 
-**Response:**
 ```json
 {
+  "count": 1,
+  "devices": [
+    {
+      "serial": "emulator-5554",
+      "status": "device",
+      "model": "sdk gphone x86",
+      "product": "sdk_gphone",
+      "connection": "usb"
+    }
+  ]
+}
+```
+
+### `GET /api/device/<serial>/info`
+
+```json
+{
+  "serial": "emulator-5554",
   "model": "Pixel 6",
-  "android": "13",
-  "api": 33,
-  "build": "TQ3A.210705.001",
-  "storage": {"total": "128GB", "free": "45GB"},
-  "battery": {"level": 87, "temp": 35}
+  "brand": "google",
+  "android": "14",
+  "api": "34",
+  "build": "...",
+  "battery": 87,
+  "battery_status": "charging"
 }
 ```
 
 ---
 
-## Apps
+## Packages
 
-### List Installed Packages
-```
-GET /api/device/<serial>/packages?type=user|system|all
-```
+### `GET /api/device/<serial>/packages?type=user|system|all`
 
-**Query Parameters:**
-- `type` — `user` (default), `system`, or `all`
-
-**Response:**
 ```json
-[
-  {"package": "com.example.app", "label": "Example App", "version": "1.0.0"},
-  {"package": "com.another.app", "label": "Another", "version": "2.1"}
-]
+{ "packages": ["com.example.app"], "count": 1, "type": "user" }
 ```
 
-### Install APK
-```
-POST /api/device/<serial>/install
-Content-Type: multipart/form-data
+### `POST /api/device/<serial>/uninstall`
 
-apk_file: <binary APK file>
+```json
+{ "package": "com.example.app" }
 ```
 
-### Uninstall Package
-```
-POST /api/device/<serial>/uninstall
-Content-Type: application/json
+### `POST /api/device/<serial>/clear`
 
-{"package": "com.example.app"}
+```json
+{ "package": "com.example.app" }
 ```
 
-### Clear App Data
-```
-POST /api/device/<serial>/clear
-Content-Type: application/json
+### `POST /api/device/<serial>/install`
 
-{"package": "com.example.app"}
-```
+Raw APK body with `Content-Type: application/octet-stream` (or `application/vnd.android.package-archive`).
 
 ---
 
-## Input & Control
+## Input & control
 
-### Tap Screen
-```
-POST /api/device/<serial>/tap
-Content-Type: application/json
+### `POST /api/device/<serial>/tap`
 
-{"x": 540, "y": 960}
+```json
+{ "x": 540, "y": 960 }
 ```
 
-### Swipe Screen
-```
-POST /api/device/<serial>/swipe
-Content-Type: application/json
+### `POST /api/device/<serial>/swipe`
 
-{"x1": 540, "y1": 1500, "x2": 540, "y2": 500, "duration": 300}
+```json
+{ "x1": 540, "y1": 1500, "x2": 540, "y2": 500, "duration": 300 }
 ```
 
-### Type Text
-```
-POST /api/device/<serial>/text
-Content-Type: application/json
+### `POST /api/device/<serial>/text`
 
-{"input": "hello world"}
+```json
+{ "input": "hello world" }
 ```
 
-### Send Key Event
-```
-POST /api/device/<serial>/key
-Content-Type: application/json
+### `POST /api/device/<serial>/key`
 
-{"code": 4}  // 4 = BACK button
+```json
+{ "code": 4 }
 ```
+
+(`3` Home, `4` Back, `26` Power, …)
+
+---
+
+## Screenshot
+
+### `GET /api/device/<serial>/screenshot`
+
+Default JSON:
+
+```json
+{ "image_base64": "...", "format": "png", "bytes": 12345 }
+```
+
+Add `?format=png` for a raw `image/png` response.
+
+---
+
+## Shell
+
+### `POST /api/device/<serial>/shell`
+
+```json
+{ "command": "dumpsys battery", "timeout": 30 }
+```
+
+```json
+{ "stdout": "...", "stderr": "", "returncode": 0, "success": true }
+```
+
+Commands run via `adb shell` on the device (no host `/bin/sh`).
 
 ---
 
 ## Files
 
-### List Directory
-```
-GET /api/device/<serial>/files?path=/sdcard/DCIM
-```
+### `GET /api/device/<serial>/files?path=/sdcard`
 
-### Push File
-```
-POST /api/device/<serial>/push
-Content-Type: multipart/form-data
-
-file: <binary data>
-path: /sdcard/file.txt
-```
-
-### Pull File
-```
-GET /api/device/<serial>/pull?path=/sdcard/file.txt
+```json
+{ "path": "/sdcard", "listing": "...", "returncode": 0 }
 ```
 
 ---
 
 ## Logcat
 
-### Stream Logcat
-```
-GET /api/device/<serial>/logcat?filter=*:V
-```
+### `GET /api/device/<serial>/logcat?lines=100`
 
-**Note:** WebSocket recommended for streaming. Falls back to chunked HTTP.
+Returns a buffered snapshot (`adb logcat -d -t N`), not a live stream.
+
+```json
+{ "lines": ["..."], "returncode": 0 }
+```
 
 ---
 
-## Error Responses
+## Wireless ADB
 
-### Device Not Found
+### `POST /api/wireless/pair`
+
 ```json
-{"error": "device_not_found", "status": 404}
+{ "host": "192.168.1.20", "port": 37123, "pairing_code": "123456" }
 ```
 
-### ADB Command Failed
+### `POST /api/wireless/connect`
+
 ```json
-{"error": "command_failed", "details": "...", "status": 500}
+{ "host": "192.168.1.20", "port": 5555 }
 ```
+
+### `POST /api/wireless/disconnect`
+
+```json
+{ "target": "192.168.1.20:5555" }
+```
+
+Omit `target` (or send `{}`) to disconnect all wireless endpoints.
+
+### `GET /api/wireless/status`
+
+Lists devices and highlights wireless connections.
