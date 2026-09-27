@@ -8,13 +8,18 @@ from __future__ import annotations
 import os
 import re
 import shutil
+import signal
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
 # Serials are alphanumeric with optional :port for wireless / emulator names.
 _SERIAL_RE = re.compile(r"^[A-Za-z0-9._:-]+$")
+_TAG_RE = re.compile(r"^[A-Za-z0-9_./+]{1,128}$")
+_PACKAGE_RE = re.compile(r"^[A-Za-z0-9._]+$")
+_LOG_LEVELS = frozenset({"V", "D", "I", "W", "E", "F", "S"})
 DEFAULT_TIMEOUT = 30
 ADB_BIN = os.environ.get("ADB_PATH", "adb")
 
@@ -388,3 +393,164 @@ def save_temp_upload(data: bytes, suffix: str = ".apk") -> str:
     with open(path, "wb") as fh:
         fh.write(data)
     return path
+
+
+def validate_log_level(level: Optional[str]) -> str:
+    value = (level or "V").strip().upper()
+    if value not in _LOG_LEVELS:
+        raise AdbError(
+            "Invalid log level (use V, D, I, W, E, F, or S)",
+            code="invalid_param",
+            details=value,
+        )
+    return value
+
+
+def validate_log_tag(tag: Optional[str]) -> Optional[str]:
+    if tag is None or tag == "":
+        return None
+    tag = tag.strip()
+    if not _TAG_RE.match(tag):
+        raise AdbError("Invalid logcat tag", code="invalid_param", details=tag)
+    return tag
+
+
+def validate_package_name(package: Optional[str]) -> Optional[str]:
+    if package is None or package == "":
+        return None
+    package = package.strip()
+    if not _PACKAGE_RE.match(package):
+        raise AdbError("Invalid package name", code="invalid_param", details=package)
+    return package
+
+
+def resolve_package_pid(serial: Optional[str], package: str) -> int:
+    """Resolve a running package to a PID via ``adb shell pidof -s``."""
+    package = validate_package_name(package)
+    if not package:
+        raise AdbError("Package required", code="invalid_param")
+    result = run_adb(["shell", "pidof", "-s", package], serial=serial, timeout=10)
+    pid_text = (result.stdout or "").strip().split()[0] if result.stdout else ""
+    if not pid_text.isdigit():
+        raise AdbError(
+            f"No running process for package {package}",
+            code="process_not_found",
+            details=result.stderr or result.stdout,
+        )
+    return int(pid_text)
+
+
+def build_logcat_args(
+    *,
+    level: str = "V",
+    tag: Optional[str] = None,
+    pid: Optional[int] = None,
+    clear: bool = False,
+    dump: bool = False,
+    lines: Optional[int] = None,
+) -> List[str]:
+    """Build argv for ``adb logcat`` (without the leading ``adb`` / ``-s``)."""
+    level = validate_log_level(level)
+    tag = validate_log_tag(tag)
+    args: List[str] = ["logcat"]
+    if clear:
+        # Caller typically runs clear as a separate one-shot; kept for completeness.
+        return ["logcat", "-c"]
+    if dump:
+        args.append("-d")
+    if lines is not None:
+        count = max(1, min(int(lines), 2000))
+        args.extend(["-t", str(count)])
+    # Format includes priority/tag for UI filtering readability.
+    args.extend(["-v", "brief"])
+    if pid is not None:
+        pid = int(pid)
+        if pid <= 0:
+            raise AdbError("Invalid pid", code="invalid_param")
+        args.extend(["--pid", str(pid)])
+    if tag:
+        args.append(f"{tag}:{level}")
+        if level != "S":
+            args.append("*:S")
+    else:
+        args.append(f"*:{level}")
+    return args
+
+
+def open_logcat_stream(
+    serial: Optional[str] = None,
+    *,
+    level: str = "V",
+    tag: Optional[str] = None,
+    package: Optional[str] = None,
+    clear: bool = False,
+) -> subprocess.Popen:
+    """Start a live ``adb logcat`` process (stdout line-buffered text).
+
+    Never uses a shell. Caller must ``terminate_process`` when done.
+    """
+    if not adb_available():
+        raise AdbError(
+            "ADB not found in PATH. Install Android platform-tools.",
+            code="adb_missing",
+        )
+
+    serial = validate_serial(serial)
+    package = validate_package_name(package)
+    pid: Optional[int] = None
+    if package:
+        pid = resolve_package_pid(serial, package)
+
+    if clear:
+        run_adb(["logcat", "-c"], serial=serial, timeout=10)
+
+    logcat_args = build_logcat_args(level=level, tag=tag, pid=pid)
+    cmd: List[str] = [ADB_BIN]
+    if serial:
+        cmd.extend(["-s", serial])
+    cmd.extend(logcat_args)
+
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            shell=False,
+        )
+    except FileNotFoundError as exc:
+        raise AdbError("ADB not found in PATH", code="adb_missing") from exc
+    return proc
+
+
+def terminate_process(proc: Optional[subprocess.Popen], *, grace: float = 1.0) -> None:
+    """Terminate a child process and drain pipes (best-effort)."""
+    if proc is None:
+        return
+    if proc.poll() is not None:
+        return
+    try:
+        proc.send_signal(signal.SIGTERM)
+    except (ProcessLookupError, OSError):
+        return
+    deadline = time.time() + grace
+    while time.time() < deadline:
+        if proc.poll() is not None:
+            break
+        time.sleep(0.05)
+    if proc.poll() is None:
+        try:
+            proc.kill()
+        except (ProcessLookupError, OSError):
+            pass
+    try:
+        proc.wait(timeout=1)
+    except subprocess.TimeoutExpired:
+        pass
+    for pipe in (proc.stdout, proc.stderr):
+        if pipe:
+            try:
+                pipe.close()
+            except OSError:
+                pass

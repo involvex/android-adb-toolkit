@@ -12,3 +12,4 @@ venv/
 *.png
 /tmp/
 .DS_Store
+cli.exe

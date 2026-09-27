@@ -35,7 +35,7 @@ docker run --rm -p 8000:8000 --network host android-adb-toolkit
 - **Screenshot preview in the UI**
 - **Shell executor panel** (device shell only; no host shell)
 - **Wireless ADB pair / connect / disconnect**
-- Logcat snapshot
+- Live logcat streaming (SSE) with level/tag/package filters
 - Dark / light theme, responsive layout
 - JSON REST API with consistent error shapes
 
@@ -71,6 +71,7 @@ pip install -e .
 - `GET /api/device/<serial>/info` — device info
 - `GET /api/device/<serial>/packages?type=user\|system\|all`
 - `GET /api/device/<serial>/screenshot` — PNG as base64 JSON
+- `GET /api/device/<serial>/logcat/stream` — live logcat (SSE)
 - `POST /api/device/<serial>/shell` — `{"command": "..."}`
 - `POST /api/device/<serial>/tap|swipe|text|key|clear|uninstall`
 - `POST /api/wireless/pair|connect|disconnect`

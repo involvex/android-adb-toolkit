@@ -9,7 +9,7 @@
 - Screenshot preview in the browser
 - Shell executor (device `adb shell` only)
 - Wireless ADB pair / connect / disconnect
-- Logcat snapshot
+- Live logcat streaming (SSE) with level / tag / package filters
 - Dark / light theme, responsive layout
 
 ## REST API

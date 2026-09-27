@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT / "static"
 
 DEVICE_PATH_RE = re.compile(
-    r"^/api/device/(?P<serial>[^/]+)(?:/(?P<action>[\w-]+))?$"
+    r"^/api/device/(?P<serial>[^/]+)(?:/(?P<action>logcat/stream|[\w-]+))?$"
 )
 
 
@@ -105,16 +105,22 @@ class ToolkitHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
+    def _status_for_error(self, exc: adb_lib.AdbError) -> int:
+        if exc.code in ("device_not_found", "no_device", "process_not_found"):
+            return 404
+        if exc.code in ("invalid_serial", "invalid_param", "invalid_json"):
+            return 400
+        if exc.code == "adb_missing":
+            return 503
+        return 500
+
     def do_GET(self) -> None:
         try:
             self._handle_get()
         except adb_lib.AdbError as exc:
-            status = 404 if exc.code in ("device_not_found", "no_device") else 500
-            if exc.code in ("invalid_serial", "invalid_param", "invalid_json"):
-                status = 400
-            if exc.code == "adb_missing":
-                status = 503
-            self.send_error_json(exc.code, exc.message, status, exc.details)
+            self.send_error_json(
+                exc.code, exc.message, self._status_for_error(exc), exc.details
+            )
         except Exception as exc:  # noqa: BLE001 — last-resort API guard
             traceback.print_exc()
             self.send_error_json("internal_error", str(exc), 500)
@@ -123,12 +129,9 @@ class ToolkitHandler(BaseHTTPRequestHandler):
         try:
             self._handle_post()
         except adb_lib.AdbError as exc:
-            status = 404 if exc.code in ("device_not_found", "no_device") else 500
-            if exc.code in ("invalid_serial", "invalid_param", "invalid_json"):
-                status = 400
-            if exc.code == "adb_missing":
-                status = 503
-            self.send_error_json(exc.code, exc.message, status, exc.details)
+            self.send_error_json(
+                exc.code, exc.message, self._status_for_error(exc), exc.details
+            )
         except Exception as exc:  # noqa: BLE001
             traceback.print_exc()
             self.send_error_json("internal_error", str(exc), 500)
@@ -255,14 +258,17 @@ class ToolkitHandler(BaseHTTPRequestHandler):
             )
 
         if action == "logcat":
-            # Snapshot (not a live stream) — keeps the endpoint usable without WS.
+            # Buffered snapshot (non-streaming).
             count = int((qs.get("lines") or ["100"])[0])
-            count = max(1, min(count, 2000))
-            result = adb_lib.run_adb(
-                ["logcat", "-d", "-t", str(count)],
-                serial=serial,
-                timeout=20,
+            level = (qs.get("level") or ["V"])[0]
+            tag = (qs.get("tag") or [None])[0]
+            args = adb_lib.build_logcat_args(
+                level=level,
+                tag=tag,
+                dump=True,
+                lines=count,
             )
+            result = adb_lib.run_adb(args, serial=serial, timeout=20)
             return self.send_json(
                 {
                     "lines": result.stdout.splitlines(),
@@ -270,6 +276,9 @@ class ToolkitHandler(BaseHTTPRequestHandler):
                     "returncode": result.returncode,
                 }
             )
+
+        if action == "logcat/stream":
+            return self._stream_logcat(serial, qs)
 
         if action == "files":
             path = (qs.get("path") or ["/sdcard"])[0]
@@ -393,6 +402,105 @@ class ToolkitHandler(BaseHTTPRequestHandler):
             )
 
         self.send_error_json("not_found", f"Unknown action: {action}", 404)
+
+    def _sse_write(self, chunk: str) -> None:
+        self.wfile.write(chunk.encode("utf-8"))
+        self.wfile.flush()
+
+    def _sse_event(self, event: str, data: Any) -> None:
+        payload = json.dumps(data, default=str, separators=(",", ":"))
+        self._sse_write(f"event: {event}\ndata: {payload}\n\n")
+
+    def _stream_logcat(self, serial: str, qs: dict) -> None:
+        """SSE live logcat stream. Tears down adb when the client disconnects."""
+        level = (qs.get("level") or ["V"])[0]
+        tag = (qs.get("tag") or [None])[0]
+        package = (qs.get("package") or [None])[0]
+        clear = (qs.get("clear") or ["0"])[0] in ("1", "true", "yes")
+
+        # Validate before opening the SSE response so clients get JSON errors.
+        adb_lib.validate_serial(serial)
+        adb_lib.validate_log_level(level)
+        adb_lib.validate_log_tag(tag)
+        adb_lib.validate_package_name(package)
+        if not adb_lib.adb_available():
+            raise adb_lib.AdbError(
+                "ADB not found in PATH. Install Android platform-tools.",
+                code="adb_missing",
+            )
+
+        proc = adb_lib.open_logcat_stream(
+            serial,
+            level=level,
+            tag=tag,
+            package=package,
+            clear=clear,
+        )
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache, no-store")
+        self.send_header("Connection", "close")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("X-Accel-Buffering", "no")
+        self.end_headers()
+
+        # Bound how many lines we emit if a client stalls forever on a quiet
+        # device; the write itself provides backpressure when the TCP window fills.
+        heartbeat_every = 50
+        lines_since_heartbeat = 0
+        try:
+            self._sse_event(
+                "status",
+                {
+                    "state": "started",
+                    "serial": serial,
+                    "level": adb_lib.validate_log_level(level),
+                    "tag": tag or "",
+                    "package": package or "",
+                },
+            )
+            assert proc.stdout is not None
+            while True:
+                line = proc.stdout.readline()
+                if line == "":
+                    # Process exited or pipe closed.
+                    code = proc.poll()
+                    err = ""
+                    if proc.stderr is not None:
+                        try:
+                            err = proc.stderr.read() or ""
+                        except OSError:
+                            err = ""
+                    self._sse_event(
+                        "status",
+                        {
+                            "state": "ended",
+                            "returncode": code,
+                            "stderr": err.strip()[:500],
+                        },
+                    )
+                    break
+                text = line.rstrip("\r\n")
+                if text:
+                    self._sse_event("line", {"text": text})
+                    lines_since_heartbeat += 1
+                    if lines_since_heartbeat >= heartbeat_every:
+                        self._sse_event("status", {"state": "streaming"})
+                        lines_since_heartbeat = 0
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            # Client disconnected — fall through to terminate.
+            pass
+        except Exception as exc:  # noqa: BLE001
+            try:
+                self._sse_event(
+                    "error",
+                    {"message": str(exc), "code": "stream_error"},
+                )
+            except (BrokenPipeError, ConnectionResetError, OSError):
+                pass
+        finally:
+            adb_lib.terminate_process(proc)
 
     def _serve_static(self, rel: str) -> None:
         # Prevent path traversal.

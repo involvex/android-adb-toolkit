@@ -11,6 +11,7 @@ Features planned and in development.
 - [x] Logcat viewer
 - [x] Screenshots in UI
 - [x] Terminal-like shell executor
+- [x] Live logcat streaming (SSE)
 
 ## v1.1
 - [x] Dark mode for web UI
@@ -26,7 +27,6 @@ Features planned and in development.
 - Multi-device dashboard polish
 - App permission audit with risk scoring
 - Notification viewer + filter
-- Live logcat WebSocket stream
 - Backup/restore manager
 - ~~Built-in Frida hook launcher~~ (deferred — out of scope for core toolkit)
 - ~~Cloud sync~~ (deferred)

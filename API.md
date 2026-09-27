@@ -163,13 +163,39 @@ Commands run via `adb shell` on the device (no host `/bin/sh`).
 
 ## Logcat
 
-### `GET /api/device/<serial>/logcat?lines=100`
+### `GET /api/device/<serial>/logcat?lines=100&level=V&tag=`
 
-Returns a buffered snapshot (`adb logcat -d -t N`), not a live stream.
+Buffered snapshot (`adb logcat -d -t N`). Optional `level` (`V|D|I|W|E|F|S`) and `tag`.
 
 ```json
 { "lines": ["..."], "returncode": 0 }
 ```
+
+### `GET /api/device/<serial>/logcat/stream` (SSE)
+
+Live Server-Sent Events stream of `adb logcat`. Query params:
+
+| Param | Description |
+|-------|-------------|
+| `level` | Minimum priority: `V`, `D`, `I`, `W`, `E`, `F` (default `V`) |
+| `tag` | Optional tag filter (other tags silenced) |
+| `package` | Optional package name → filtered via `--pid` (process must be running) |
+| `clear` | `1` to run `logcat -c` before streaming |
+
+Example events:
+
+```
+event: status
+data: {"state":"started","serial":"emulator-5554","level":"I"}
+
+event: line
+data: {"text":"I/ActivityManager: ..."}
+
+event: status
+data: {"state":"ended","returncode":0}
+```
+
+Closing the HTTP connection stops `adb logcat` on the server (SIGTERM/kill). Bind remains localhost by default. Invalid serial/level/tag/package return JSON `400` before the stream starts.
 
 ---
 

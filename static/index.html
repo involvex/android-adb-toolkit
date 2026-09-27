@@ -130,6 +130,16 @@
     .shot-wrap img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
     .hint { color: var(--muted); font-size: .8rem; margin-top: 8px; }
     .keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 280px; }
+    .log-live {
+      margin-top: 12px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: .75rem;
+      height: min(55vh, 480px); overflow: auto; white-space: pre-wrap; word-break: break-word;
+      line-height: 1.35;
+    }
+    .log-live .log-line { display: block; }
+    .log-meta { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+    .log-meta.live { color: var(--success); }
+    .log-meta.paused { color: var(--warn); }
   </style>
 </head>
 <body>
@@ -259,13 +269,35 @@
         </section>
 
         <section id="logcat" class="section">
-          <h2>Logcat snapshot</h2>
-          <p class="desc">Fetch recent buffered log lines (not a live stream).</p>
+          <h2>Live logcat</h2>
+          <p class="desc">Stream device logs over SSE. Pause stops the stream; Clear empties the panel.</p>
           <div class="row">
-            <input id="logLines" type="number" min="10" max="2000" value="100" />
-            <button class="btn" type="button" id="logBtn">Fetch logcat</button>
+            <select id="logLevel" aria-label="Log level" title="Minimum priority">
+              <option value="V">Verbose</option>
+              <option value="D">Debug</option>
+              <option value="I" selected>Info</option>
+              <option value="W">Warn</option>
+              <option value="E">Error</option>
+              <option value="F">Fatal</option>
+            </select>
+            <input id="logTag" placeholder="Tag filter (optional)" autocomplete="off" />
+            <input id="logPackage" placeholder="Package (optional)" autocomplete="off" />
           </div>
-          <div class="output" id="logOut"></div>
+          <div class="row">
+            <button class="btn" type="button" id="logStartBtn">Start</button>
+            <button class="btn secondary" type="button" id="logPauseBtn" disabled>Pause</button>
+            <button class="btn secondary" type="button" id="logClearBtn">Clear</button>
+            <label class="hint" style="display:flex;align-items:center;gap:6px;margin:0">
+              <input type="checkbox" id="logClearBuf" /> Clear device buffer on start
+            </label>
+          </div>
+          <div class="row">
+            <input id="logLines" type="number" min="10" max="2000" value="100" title="Snapshot line count" />
+            <button class="btn secondary" type="button" id="logBtn">Fetch snapshot</button>
+          </div>
+          <div class="log-meta" id="logMeta">Idle</div>
+          <div class="log-live" id="logLive" aria-live="polite"></div>
+          <div class="output" id="logOut" hidden></div>
         </section>
       </main>
     </div>
@@ -520,14 +552,175 @@
       } catch (e) { showOut($("wirelessOut"), e.message, false); }
     });
 
+    // —— Live logcat (SSE) ————————————————————————————————
+    const LOG_MAX_LINES = 3000;
+    let logSource = null;
+    let logPaused = false;
+    let logLineCount = 0;
+    let logPending = [];
+    let logFlushScheduled = false;
+
+    function setLogMeta(text, cls) {
+      const el = $("logMeta");
+      el.textContent = text;
+      el.classList.remove("live", "paused");
+      if (cls) el.classList.add(cls);
+    }
+
+    function stopLogcatStream(opts) {
+      const keepPaused = opts && opts.keepPaused;
+      if (logSource) {
+        try { logSource.close(); } catch (_) { /* ignore */ }
+        logSource = null;
+      }
+      if (keepPaused) {
+        logPaused = true;
+        $("logStartBtn").disabled = true;
+        $("logPauseBtn").disabled = false;
+        $("logPauseBtn").textContent = "Resume";
+      } else {
+        logPaused = false;
+        $("logStartBtn").disabled = false;
+        $("logPauseBtn").disabled = true;
+        $("logPauseBtn").textContent = "Pause";
+      }
+    }
+
+    function flushLogLines() {
+      logFlushScheduled = false;
+      const box = $("logLive");
+      if (!logPending.length) return;
+      const frag = document.createDocumentFragment();
+      for (const text of logPending) {
+        const span = document.createElement("span");
+        span.className = "log-line";
+        span.textContent = text;
+        frag.appendChild(span);
+        frag.appendChild(document.createTextNode("\n"));
+        logLineCount += 1;
+      }
+      logPending = [];
+      box.appendChild(frag);
+      while (box.childNodes.length > LOG_MAX_LINES * 2) {
+        box.removeChild(box.firstChild);
+      }
+      box.scrollTop = box.scrollHeight;
+      if (logSource) setLogMeta(`Streaming · ${logLineCount} lines`, "live");
+    }
+
+    function queueLogLine(text) {
+      if (logPaused) return;
+      logPending.push(text);
+      if (!logFlushScheduled) {
+        logFlushScheduled = true;
+        requestAnimationFrame(flushLogLines);
+      }
+    }
+
+    function startLogcatStream() {
+      stopLogcatStream();
+      let s;
+      try { s = requireSerial(); } catch (e) {
+        setLogMeta(e.message);
+        return;
+      }
+      const params = new URLSearchParams();
+      params.set("level", $("logLevel").value || "I");
+      const tag = $("logTag").value.trim();
+      const pkg = $("logPackage").value.trim();
+      if (tag) params.set("tag", tag);
+      if (pkg) params.set("package", pkg);
+      if ($("logClearBuf").checked) params.set("clear", "1");
+
+      const url = `${API}/api/device/${s}/logcat/stream?${params.toString()}`;
+      const es = new EventSource(url);
+      logSource = es;
+      logPaused = false;
+      $("logStartBtn").disabled = true;
+      $("logPauseBtn").disabled = false;
+      $("logPauseBtn").textContent = "Pause";
+      setLogMeta("Connecting…", "live");
+
+      es.addEventListener("status", (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data.state === "started") {
+            setLogMeta(`Streaming · ${logLineCount} lines`, "live");
+          } else if (data.state === "ended") {
+            setLogMeta(`Ended${data.stderr ? " · " + data.stderr : ""}`);
+            stopLogcatStream();
+          } else if (data.state === "streaming") {
+            setLogMeta(`Streaming · ${logLineCount} lines`, "live");
+          }
+        } catch (_) { /* ignore */ }
+      });
+      es.addEventListener("line", (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data.text != null) queueLogLine(data.text);
+        } catch (_) { /* ignore */ }
+      });
+      es.addEventListener("error", (ev) => {
+        if (ev.data) {
+          try {
+            const data = JSON.parse(ev.data);
+            setLogMeta(data.message || "Stream error");
+          } catch (_) {
+            setLogMeta("Stream error");
+          }
+        }
+      });
+      es.onerror = () => {
+        if (logSource === es) {
+          setLogMeta(logLineCount ? `Disconnected · ${logLineCount} lines` : "Stream failed (check ADB / device)");
+          stopLogcatStream();
+        }
+      };
+    }
+
+    $("logStartBtn").addEventListener("click", startLogcatStream);
+    $("logPauseBtn").addEventListener("click", () => {
+      if (logSource && !logPaused) {
+        // Pause closes the SSE connection so adb logcat is torn down.
+        stopLogcatStream({ keepPaused: true });
+        setLogMeta(`Paused · ${logLineCount} lines`, "paused");
+        return;
+      }
+      if (logPaused) {
+        startLogcatStream();
+      }
+    });
+    $("logClearBtn").addEventListener("click", () => {
+      $("logLive").textContent = "";
+      logPending = [];
+      logLineCount = 0;
+      if (logSource) setLogMeta("Streaming · 0 lines", "live");
+      else if (logPaused) setLogMeta("Paused · 0 lines", "paused");
+      else setLogMeta("Idle");
+    });
+
     $("logBtn").addEventListener("click", async () => {
       try {
         const s = requireSerial();
         const lines = $("logLines").value || 100;
-        const data = await api(`/api/device/${s}/logcat?lines=${encodeURIComponent(lines)}`);
-        showOut($("logOut"), (data.lines || []).join("\n"), true);
-      } catch (e) { showOut($("logOut"), e.message, false); }
+        const level = $("logLevel").value || "V";
+        const tag = $("logTag").value.trim();
+        let path = `/api/device/${s}/logcat?lines=${encodeURIComponent(lines)}&level=${encodeURIComponent(level)}`;
+        if (tag) path += `&tag=${encodeURIComponent(tag)}`;
+        const data = await api(path);
+        const box = $("logLive");
+        box.textContent = (data.lines || []).join("\n");
+        logLineCount = (data.lines || []).length;
+        setLogMeta(`Snapshot · ${logLineCount} lines`);
+        $("logOut").hidden = true;
+      } catch (e) {
+        setLogMeta(e.message);
+        $("logOut").hidden = false;
+        showOut($("logOut"), e.message, false);
+      }
     });
+
+    window.addEventListener("beforeunload", stopLogcatStream);
 
     refreshHealth();
     refreshDevices();

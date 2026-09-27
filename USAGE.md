@@ -18,7 +18,7 @@ Requires Python 3.8+ and `adb` on your `PATH`. The server binds to localhost by 
 - Send taps, text, and keyevents
 - Run device shell commands
 - Pair/connect wireless debugging
-- Fetch a logcat snapshot
+- Stream live logcat (Start/Pause/Clear) with level, tag, and package filters
 
 ## API scripting
 
