@@ -4,7 +4,7 @@ Web-based ADB control panel — manage Android devices from your browser.
 
 ## How to run
 
-### 1. Web UI + API (primary)
+### 1. Web UI + API (primary, local device control)
 
 ```bash
 # Requires: Python 3.8+ and `adb` on your PATH
@@ -20,7 +20,21 @@ python3 server.py --host 127.0.0.1 --port 8000
 # or: ADB_TOOLKIT_PORT=9000 python3 server.py
 ```
 
-### 2. Python CLI
+### 2. Command Finder PWA (GitHub Pages)
+
+Installable docs app for browsing/searching ADB + toolkit commands (offline-capable):
+
+**https://involvex.github.io/android-adb-toolkit/**
+
+```bash
+# Local preview of the Pages app
+python3 -m http.server 5500 --directory docs
+# → http://127.0.0.1:5500/
+```
+
+Source: [`docs/`](docs/README.md). Deployed from `docs/` via GitHub Actions (`.github/workflows/deploy.yml`).
+
+### 3. Python CLI
 
 ```bash
 python3 -m adb_toolkit devices
@@ -33,7 +47,7 @@ python3 -m adb_toolkit install app.apk
 # Equivalent shims: python3 cli.py …   /   python3 adb-cli.py …
 ```
 
-### 3. Optional Node CLI
+### 4. Optional Node CLI
 
 ```bash
 cd cli && npm install && npm link
@@ -67,9 +81,10 @@ docker run --rm -p 8000:8000 --network host android-adb-toolkit
 
 | Path | Role |
 |------|------|
-| `server.py` | **Primary** — web UI + API |
+| `server.py` | **Primary** — local web UI + API |
 | `adb_toolkit/` | Safe ADB helpers, HTTP server, **Python CLI** |
-| `static/index.html` | Primary web UI |
+| `static/index.html` | Primary local web UI |
+| `docs/` | **GitHub Pages PWA** — command finder |
 | `cli/` | Optional Node CLI (`adb-toolkit`) |
 | `wireless.py` | Wireless ADB CLI helper |
 | `tools/`, `scripts/` | Specialized helpers |

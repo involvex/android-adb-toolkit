@@ -1,5 +1,11 @@
 # ADB Toolkit Features
 
+## Command Finder PWA (GitHub Pages)
+
+- Installable offline-capable app at `docs/`
+- Searchable catalog of ADB + toolkit commands with copy-to-clipboard
+- URL: https://involvex.github.io/android-adb-toolkit/
+
 ## Primary web UI (`python3 server.py` → http://127.0.0.1:8000)
 
 - Device selector (USB + wireless)

@@ -1,3 +1,4 @@
-theme: minima
-title: ADB Command Builder
-description: Android ADB toolkit
+# GitHub Pages serves the docs/ folder via Actions (see .github/workflows/deploy.yml).
+# Legacy Jekyll theme settings are unused; docs/.nojekyll keeps Pages from running Jekyll.
+title: ADB Command Finder
+description: Searchable ADB and Android ADB Toolkit command catalog (PWA)

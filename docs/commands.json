@@ -1,0 +1,1458 @@
+{
+  "version": "1.1.0",
+  "name": "Android ADB Toolkit \u2014 Command Finder",
+  "updated": "2026-09-27",
+  "categories": [
+    {
+      "id": "toolkit",
+      "label": "Toolkit",
+      "description": "This repo's server, CLI, and API"
+    },
+    {
+      "id": "connection",
+      "label": "Connection",
+      "description": "Devices, wireless, forwarding"
+    },
+    {
+      "id": "device-info",
+      "label": "Device info",
+      "description": "Props, battery, storage"
+    },
+    {
+      "id": "packages",
+      "label": "Packages",
+      "description": "Install, list, clear, debloat"
+    },
+    {
+      "id": "logcat",
+      "label": "Logcat",
+      "description": "Live and dumped logs"
+    },
+    {
+      "id": "screen",
+      "label": "Screen",
+      "description": "Screenshot and record"
+    },
+    {
+      "id": "input",
+      "label": "Input",
+      "description": "Tap, swipe, text, keys"
+    },
+    {
+      "id": "files",
+      "label": "Files",
+      "description": "Push, pull, list, backup"
+    },
+    {
+      "id": "performance",
+      "label": "Performance",
+      "description": "Animations and tuning"
+    },
+    {
+      "id": "privacy",
+      "label": "Privacy",
+      "description": "Permissions and hardening"
+    },
+    {
+      "id": "battery",
+      "label": "Battery",
+      "description": "Power and drain"
+    },
+    {
+      "id": "display",
+      "label": "Display",
+      "description": "Size, density, brightness"
+    }
+  ],
+  "commands": [
+    {
+      "id": "toolkit-001",
+      "title": "Start web control panel",
+      "command": "python3 server.py",
+      "description": "Launch the local ADB Toolkit web UI and REST API on http://127.0.0.1:8000/.",
+      "category": "toolkit",
+      "tags": [
+        "server",
+        "web",
+        "ui",
+        "api"
+      ],
+      "examples": [
+        "python3 server.py --port 8000",
+        "ADB_TOOLKIT_PORT=9000 python3 server.py"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-002",
+      "title": "List devices (Python CLI)",
+      "command": "python3 -m adb_toolkit devices",
+      "description": "List connected devices using the canonical Python CLI.",
+      "category": "toolkit",
+      "tags": [
+        "cli",
+        "devices"
+      ],
+      "examples": [
+        "python3 -m adb_toolkit devices --json"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-003",
+      "title": "Device info (Python CLI)",
+      "command": "python3 -m adb_toolkit info",
+      "description": "Print model, Android version, API level, and battery for the selected device.",
+      "category": "toolkit",
+      "tags": [
+        "cli",
+        "info"
+      ],
+      "examples": [
+        "python3 -m adb_toolkit -s emulator-5554 info --json"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-004",
+      "title": "List user packages (Python CLI)",
+      "command": "python3 -m adb_toolkit packages --type user",
+      "description": "List third-party packages via the safe CLI helper.",
+      "category": "toolkit",
+      "tags": [
+        "cli",
+        "packages"
+      ],
+      "examples": [
+        "python3 -m adb_toolkit packages --type all"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-005",
+      "title": "Shell via Python CLI",
+      "command": "python3 -m adb_toolkit shell \"getprop ro.product.model\"",
+      "description": "Run a device shell command without host shell injection.",
+      "category": "toolkit",
+      "tags": [
+        "cli",
+        "shell"
+      ],
+      "examples": [
+        "python3 -m adb_toolkit shell dumpsys battery"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-006",
+      "title": "Screenshot via Python CLI",
+      "command": "python3 -m adb_toolkit screenshot -o screen.png",
+      "description": "Capture a PNG screenshot to a local file.",
+      "category": "toolkit",
+      "tags": [
+        "cli",
+        "screenshot"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-007",
+      "title": "Install APK via Python CLI",
+      "command": "python3 -m adb_toolkit install app.apk",
+      "description": "Install (replace) an APK on the connected device.",
+      "category": "toolkit",
+      "tags": [
+        "cli",
+        "install",
+        "apk"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-008",
+      "title": "Wireless connect helper",
+      "command": "python3 wireless.py --connect 192.168.1.20 --port 5555",
+      "description": "Connect to a paired device over Wi\u2011Fi using the toolkit helper.",
+      "category": "toolkit",
+      "tags": [
+        "wireless",
+        "connect"
+      ],
+      "examples": [
+        "python3 wireless.py --list",
+        "python3 wireless.py --pair 192.168.1.20 --port 37123 --code 123456"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-009",
+      "title": "API: list devices",
+      "command": "curl -s http://127.0.0.1:8000/api/devices",
+      "description": "JSON list of devices from the local toolkit server.",
+      "category": "toolkit",
+      "tags": [
+        "api",
+        "curl",
+        "devices"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-010",
+      "title": "API: live logcat stream (SSE)",
+      "command": "curl -N \"http://127.0.0.1:8000/api/device/SERIAL/logcat/stream?level=I\"",
+      "description": "Stream live logcat over Server-Sent Events from the toolkit API.",
+      "category": "toolkit",
+      "tags": [
+        "api",
+        "logcat",
+        "sse"
+      ],
+      "examples": [
+        "# Open the Logcat panel in the web UI for Start/Pause/Clear"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-011",
+      "title": "API: shell command",
+      "command": "curl -s -X POST http://127.0.0.1:8000/api/device/SERIAL/shell -H 'Content-Type: application/json' -d '{\"command\":\"dumpsys battery\"}'",
+      "description": "Run a device shell command through the REST API.",
+      "category": "toolkit",
+      "tags": [
+        "api",
+        "shell"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-012",
+      "title": "API: screenshot JSON",
+      "command": "curl -s http://127.0.0.1:8000/api/device/SERIAL/screenshot",
+      "description": "Fetch a base64 PNG screenshot from the toolkit API.",
+      "category": "toolkit",
+      "tags": [
+        "api",
+        "screenshot"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-013",
+      "title": "Session manager",
+      "command": "python3 tools/adb-session-manager.py",
+      "description": "Summarize connected sessions, models, battery, and port forwards.",
+      "category": "toolkit",
+      "tags": [
+        "tools",
+        "session"
+      ],
+      "examples": [
+        "python3 tools/adb-session-manager.py -j sessions.json"
+      ],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-014",
+      "title": "Device performance monitor",
+      "command": "./scripts/adb-device-monitor.sh --interval 2 --duration 60",
+      "description": "Sample CPU, memory, battery, and thermal stats for a period.",
+      "category": "toolkit",
+      "tags": [
+        "scripts",
+        "monitor",
+        "performance"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "toolkit-015",
+      "title": "Run unit tests",
+      "command": "python3 -m unittest discover -s tests -v",
+      "description": "Execute the toolkit's mocked ADB / API / CLI test suite.",
+      "category": "toolkit",
+      "tags": [
+        "tests",
+        "dev"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "toolkit"
+    },
+    {
+      "id": "adb-ext-001",
+      "title": "Install APK (replace)",
+      "command": "adb install -r app.apk",
+      "description": "Install or replace an APK on the device.",
+      "category": "packages",
+      "tags": [
+        "install",
+        "apk"
+      ],
+      "examples": [
+        "adb -s SERIAL install -r app.apk"
+      ],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-002",
+      "title": "Uninstall package",
+      "command": "adb uninstall com.example.app",
+      "description": "Remove a user-installed package.",
+      "category": "packages",
+      "tags": [
+        "uninstall"
+      ],
+      "examples": [
+        "adb shell pm uninstall -k --user 0 com.example.app"
+      ],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-003",
+      "title": "Clear app data",
+      "command": "adb shell pm clear com.example.app",
+      "description": "Wipe app data and cache for a package.",
+      "category": "packages",
+      "tags": [
+        "clear",
+        "data"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-004",
+      "title": "Live logcat",
+      "command": "adb logcat",
+      "description": "Stream device logs. Filter with tags like ActivityManager:I *:S.",
+      "category": "logcat",
+      "tags": [
+        "logcat",
+        "logs",
+        "debug"
+      ],
+      "examples": [
+        "adb logcat -v brief *:I",
+        "adb logcat --pid=$(adb shell pidof -s com.example.app)"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-005",
+      "title": "Logcat dump recent lines",
+      "command": "adb logcat -d -t 100",
+      "description": "Print the last 100 buffered log lines and exit.",
+      "category": "logcat",
+      "tags": [
+        "logcat",
+        "dump"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-006",
+      "title": "Clear logcat buffer",
+      "command": "adb logcat -c",
+      "description": "Clear the device log buffer before a fresh capture.",
+      "category": "logcat",
+      "tags": [
+        "logcat",
+        "clear"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-007",
+      "title": "Screenshot to file",
+      "command": "adb exec-out screencap -p > screen.png",
+      "description": "Capture the screen as PNG without leaving a temp file on the device.",
+      "category": "screen",
+      "tags": [
+        "screenshot",
+        "screencap"
+      ],
+      "examples": [
+        "adb -s SERIAL exec-out screencap -p > screen.png"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-008",
+      "title": "Screen record",
+      "command": "adb shell screenrecord /sdcard/demo.mp4",
+      "description": "Record the display (stop with Ctrl+C), then pull the file.",
+      "category": "screen",
+      "tags": [
+        "record",
+        "video"
+      ],
+      "examples": [
+        "adb pull /sdcard/demo.mp4"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-009",
+      "title": "Tap coordinates",
+      "command": "adb shell input tap 540 960",
+      "description": "Simulate a tap at the given screen coordinates.",
+      "category": "input",
+      "tags": [
+        "tap",
+        "input"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-010",
+      "title": "Swipe gesture",
+      "command": "adb shell input swipe 540 1500 540 500 300",
+      "description": "Swipe from (x1,y1) to (x2,y2) over duration ms.",
+      "category": "input",
+      "tags": [
+        "swipe",
+        "input"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-011",
+      "title": "Type text",
+      "command": "adb shell input text 'hello%sworld'",
+      "description": "Type text into the focused field. Spaces are encoded as %s.",
+      "category": "input",
+      "tags": [
+        "text",
+        "input",
+        "keyboard"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-012",
+      "title": "Keyevent Back / Home / Power",
+      "command": "adb shell input keyevent 4",
+      "description": "Send a keyevent. 4=Back, 3=Home, 26=Power, 82=Menu.",
+      "category": "input",
+      "tags": [
+        "keyevent",
+        "back",
+        "home"
+      ],
+      "examples": [
+        "adb shell input keyevent 3",
+        "adb shell input keyevent 26"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-013",
+      "title": "Push file to device",
+      "command": "adb push local.txt /sdcard/local.txt",
+      "description": "Copy a file from the host to the device.",
+      "category": "files",
+      "tags": [
+        "push",
+        "transfer"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-014",
+      "title": "Pull file from device",
+      "command": "adb pull /sdcard/DCIM/photo.jpg .",
+      "description": "Copy a file from the device to the host.",
+      "category": "files",
+      "tags": [
+        "pull",
+        "transfer"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-015",
+      "title": "List /sdcard",
+      "command": "adb shell ls -la /sdcard",
+      "description": "List files in shared storage.",
+      "category": "files",
+      "tags": [
+        "ls",
+        "storage"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-016",
+      "title": "Wireless disconnect",
+      "command": "adb disconnect 192.168.1.20:5555",
+      "description": "Disconnect a wireless ADB endpoint (or omit target to disconnect all).",
+      "category": "connection",
+      "tags": [
+        "wireless",
+        "disconnect"
+      ],
+      "examples": [
+        "adb disconnect"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-017",
+      "title": "Select device by serial",
+      "command": "adb -s SERIAL shell getprop ro.product.model",
+      "description": "Target a specific device when multiple are connected.",
+      "category": "connection",
+      "tags": [
+        "serial",
+        "multi-device"
+      ],
+      "examples": [
+        "adb -s emulator-5554 logcat"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-ext-018",
+      "title": "Forward local port",
+      "command": "adb forward tcp:8080 tcp:8080",
+      "description": "Forward a host TCP port to the device.",
+      "category": "connection",
+      "tags": [
+        "forward",
+        "port"
+      ],
+      "examples": [
+        "adb forward --list"
+      ],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-001",
+      "title": "adb devices",
+      "command": "adb devices",
+      "description": "List connected devices. Shows serial numbers and connection state. Run this first.",
+      "category": "connection",
+      "tags": [
+        "setup",
+        "connect",
+        "list",
+        "devices"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-002",
+      "title": "adb connect 192.168.1.100:5555",
+      "command": "adb connect 192.168.1.100:5555",
+      "description": "Connect wirelessly. First enable Wireless Debugging in Developer Options (Android 11+).",
+      "category": "connection",
+      "tags": [
+        "setup",
+        "connect",
+        "wifi",
+        "wireless"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-003",
+      "title": "adb shell",
+      "command": "adb shell",
+      "description": "Open an interactive shell session on the device. Type exit to close.",
+      "category": "connection",
+      "tags": [
+        "setup",
+        "shell"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-004",
+      "title": "adb reboot",
+      "command": "adb reboot",
+      "description": "Reboot the device normally. Also: adb reboot bootloader / adb reboot recovery.",
+      "category": "connection",
+      "tags": [
+        "setup",
+        "reboot",
+        "restart"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-005",
+      "title": "adb pair 192.168.1.100:PORT",
+      "command": "adb pair 192.168.1.100:PORT",
+      "description": "Pair wirelessly (Android 11+). Use the pairing code from Wireless Debugging settings.",
+      "category": "connection",
+      "tags": [
+        "setup",
+        "pair",
+        "wireless",
+        "android11"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-006",
+      "title": "adb kill-server && adb start-server",
+      "command": "adb kill-server && adb start-server",
+      "description": "Restart the ADB daemon. Fixes most \"device not found\" or connection issues.",
+      "category": "connection",
+      "tags": [
+        "setup",
+        "kill",
+        "server",
+        "restart"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-007",
+      "title": "adb shell getprop ro.product.model",
+      "command": "adb shell getprop ro.product.model",
+      "description": "Get device model name.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "model",
+        "android",
+        "version"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-008",
+      "title": "Get Android OS version number (e",
+      "command": "adb shell getprop ro.build.version.release",
+      "description": "Get Android OS version number (e.g. \"14\").",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "android",
+        "version"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-009",
+      "title": "adb shell pm list packages -f",
+      "command": "adb shell pm list packages -f",
+      "description": "List all installed packages with APK file paths. Remove -f for just package names.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "packages",
+        "installed",
+        "apps",
+        "list"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-010",
+      "title": "adb shell pm list packages -3",
+      "command": "adb shell pm list packages -3",
+      "description": "List only user-installed (third-party) packages.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "packages",
+        "third",
+        "party",
+        "user",
+        "installed"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-011",
+      "title": "adb shell dumpsys battery",
+      "command": "adb shell dumpsys battery",
+      "description": "Full battery status: level, health, temperature, voltage, charging state.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "battery",
+        "health",
+        "stats"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-012",
+      "title": "Get current screen resolution and DPI density values",
+      "command": "adb shell wm size && adb shell wm density",
+      "description": "Get current screen resolution and DPI density values.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "screen",
+        "display",
+        "resolution",
+        "density"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-013",
+      "title": "adb shell cat /proc/meminfo",
+      "command": "adb shell cat /proc/meminfo",
+      "description": "Total and available RAM. MemTotal and MemAvailable are the key values.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "cpu",
+        "ram",
+        "memory"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-014",
+      "title": "adb shell df -h",
+      "command": "adb shell df -h",
+      "description": "Disk usage for all partitions in human-readable format.",
+      "category": "device-info",
+      "tags": [
+        "info",
+        "storage",
+        "disk",
+        "space"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-015",
+      "title": "Set all animations to 0",
+      "command": "adb shell settings put global window_animation_scale 0.5\nadb shell settings put global transition_animation_scale 0.5\nadb shell settings put global animator_duration_scale 0.5",
+      "description": "Set all animations to 0.5x speed. Use 0 to disable entirely. Makes the phone feel noticeably snappier.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "animation",
+        "speed",
+        "transition"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-016",
+      "title": "Disable all animations entirely",
+      "command": "adb shell settings put global window_animation_scale 0\nadb shell settings put global transition_animation_scale 0\nadb shell settings put global animator_duration_scale 0",
+      "description": "Disable all animations entirely. Fastest feel, but can look jarring. Restore to 1 to revert.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "animation",
+        "disable"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-017",
+      "title": "Disable heads-up (floating) notifications",
+      "command": "adb shell settings put global heads_up_notifications_enabled 0",
+      "description": "Disable heads-up (floating) notifications. Restore to 1 to re-enable.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "headsup",
+        "notifications"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-018",
+      "title": "Show apps holding wake locks",
+      "command": "adb shell dumpsys power | grep \"Wake Locks\"",
+      "description": "Show apps holding wake locks. If battery drains fast, this reveals the culprit.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "wake",
+        "lock",
+        "CPU",
+        "background"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-019",
+      "title": "adb shell am force-stop com.package.name",
+      "command": "adb shell am force-stop com.package.name",
+      "description": "Force stop any app by package name. Frees RAM immediately.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "force",
+        "stop",
+        "kill",
+        "app"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-020",
+      "title": "Tell an app to release memory",
+      "command": "adb shell am send-trim-memory com.package.name RUNNING_LOW",
+      "description": "Tell an app to release memory. Useful for heavy apps like Chrome or games.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "trim",
+        "memory",
+        "gc"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-021",
+      "title": "Enable Data Saver globally",
+      "command": "adb shell cmd netpolicy set restrict-background true",
+      "description": "Enable Data Saver globally. Restricts background data for all apps not whitelisted.",
+      "category": "performance",
+      "tags": [
+        "performance",
+        "background",
+        "data",
+        "restrict"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-022",
+      "title": "Revoke fine location permission from any app",
+      "command": "adb shell pm revoke com.package.name android.permission.ACCESS_FINE_LOCATION",
+      "description": "Revoke fine location permission from any app. Replace package name and permission as needed.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "permissions",
+        "revoke",
+        "location",
+        "tracking"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-023",
+      "title": "List all permissions granted to a specific app",
+      "command": "adb shell dumpsys package com.package.name | grep permission",
+      "description": "List all permissions granted to a specific app. Shows both granted and denied.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "permissions",
+        "list",
+        "app"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-024",
+      "title": "Revoke camera and microphone access",
+      "command": "adb shell pm revoke com.package.name android.permission.CAMERA\nadb shell pm revoke com.package.name android.permission.RECORD_AUDIO",
+      "description": "Revoke camera and microphone access. Effective for social media apps that don't need them.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "camera",
+        "microphone",
+        "revoke"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-025",
+      "title": "Disable Google usage statistics reporting",
+      "command": "adb shell settings put global google_usage_stats_disabled 1",
+      "description": "Disable Google usage statistics reporting. Part of the Privacy Hardener script.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "telemetry",
+        "google",
+        "disable"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-026",
+      "title": "Opt out of ad tracking",
+      "command": "adb shell settings put secure limit_ad_tracking 1",
+      "description": "Opt out of ad tracking. Equivalent to \"Opt out of Ads Personalization\" in Settings.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "advertising",
+        "id",
+        "reset"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-027",
+      "title": "Revoke contacts access",
+      "command": "adb shell pm revoke com.package.name android.permission.READ_CONTACTS",
+      "description": "Revoke contacts access. Highly recommended for social apps (LinkedIn, TikTok, etc.).",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "contacts",
+        "read",
+        "revoke"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-028",
+      "title": "Reset ALL runtime permissions for an app to ungranted state",
+      "command": "adb shell pm reset-permissions -p com.package.name",
+      "description": "Reset ALL runtime permissions for an app to ungranted state. Nuclear option \u2014 app will ask again.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "all",
+        "permissions",
+        "app",
+        "revoke",
+        "bulk"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-029",
+      "title": "Block sensor access (accelerometer, gyro, etc",
+      "command": "adb shell settings put global sensors_off_for_unknown_apps 1",
+      "description": "Block sensor access (accelerometer, gyro, etc.) for apps not in foreground. Android 12+.",
+      "category": "privacy",
+      "tags": [
+        "privacy",
+        "sensor",
+        "block",
+        "background"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-030",
+      "title": "Disable a system app for your user",
+      "command": "adb shell pm disable-user --user 0 com.package.name",
+      "description": "Disable a system app for your user. App stays installed but can't run. Reversible \u2014 no root needed.",
+      "category": "packages",
+      "tags": [
+        "debloat",
+        "disable",
+        "system",
+        "app",
+        "no",
+        "root"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-031",
+      "title": "adb shell pm enable com.package.name",
+      "command": "adb shell pm enable com.package.name",
+      "description": "Re-enable a previously disabled app. Always reversible.",
+      "category": "packages",
+      "tags": [
+        "debloat",
+        "enable",
+        "reenable",
+        "restore",
+        "app"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-032",
+      "title": "Uninstall for current user only",
+      "command": "adb shell pm uninstall -k --user 0 com.package.name",
+      "description": "Uninstall for current user only. App data kept (-k). Restores on factory reset. Safer than full uninstall.",
+      "category": "packages",
+      "tags": [
+        "debloat",
+        "uninstall",
+        "remove",
+        "user",
+        "app"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-033",
+      "title": "Restore a user-uninstalled system app without factory reset",
+      "command": "adb shell cmd package install-existing com.package.name",
+      "description": "Restore a user-uninstalled system app without factory reset.",
+      "category": "packages",
+      "tags": [
+        "debloat",
+        "reinstall",
+        "restore",
+        "system",
+        "app"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-034",
+      "title": "adb shell pm list packages -d",
+      "command": "adb shell pm list packages -d",
+      "description": "List all currently disabled packages. Useful audit of what you've already disabled.",
+      "category": "packages",
+      "tags": [
+        "debloat",
+        "list",
+        "disabled",
+        "packages"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-035",
+      "title": "Search for packages by keyword",
+      "command": "adb shell pm list packages | grep -i samsung",
+      "description": "Search for packages by keyword. Replace \"samsung\" with your search term.",
+      "category": "packages",
+      "tags": [
+        "debloat",
+        "find",
+        "package",
+        "name",
+        "search"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-036",
+      "title": "adb shell wm density 420",
+      "command": "adb shell wm density 420",
+      "description": "Change display DPI. Lower = more content on screen. Typical range: 320-480. Reset: adb shell wm density reset",
+      "category": "display",
+      "tags": [
+        "display",
+        "dpi",
+        "density",
+        "change"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-037",
+      "title": "adb shell wm size 1080x1920",
+      "command": "adb shell wm size 1080x1920",
+      "description": "Override screen resolution. Reset: adb shell wm size reset. Use with caution \u2014 some resolutions cause issues.",
+      "category": "display",
+      "tags": [
+        "display",
+        "resolution",
+        "size",
+        "change"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-038",
+      "title": "Set font size scale",
+      "command": "adb shell settings put system font_scale 1.0",
+      "description": "Set font size scale. 1.0 = default. Range: 0.85 (smaller) to 1.3 (larger).",
+      "category": "display",
+      "tags": [
+        "display",
+        "font",
+        "size",
+        "scale"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-039",
+      "title": "Set screen brightness (0-255)",
+      "command": "adb shell settings put system screen_brightness 128",
+      "description": "Set screen brightness (0-255). Disable auto-brightness first: settings put system screen_brightness_mode 0",
+      "category": "display",
+      "tags": [
+        "display",
+        "brightness",
+        "auto",
+        "adaptive"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-041",
+      "title": "Record screen to device storage",
+      "command": "adb shell screenrecord /sdcard/record.mp4",
+      "description": "Record screen to device storage. Ctrl+C to stop. Pull with: adb pull /sdcard/record.mp4",
+      "category": "display",
+      "tags": [
+        "display",
+        "record",
+        "screen",
+        "video"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-042",
+      "title": "adb pull /sdcard/DCIM/ ./backup/",
+      "command": "adb pull /sdcard/DCIM/ ./backup/",
+      "description": "Copy a folder from device to PC. Works for any path you have permission to access.",
+      "category": "files",
+      "tags": [
+        "backup",
+        "pull",
+        "file",
+        "copy",
+        "pc"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-043",
+      "title": "adb push ./file.apk /sdcard/",
+      "command": "adb push ./file.apk /sdcard/",
+      "description": "Copy a file from PC to device storage.",
+      "category": "files",
+      "tags": [
+        "backup",
+        "push",
+        "file",
+        "upload",
+        "device"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-045",
+      "title": "adb shell pm path com.package.name",
+      "command": "adb shell pm path com.package.name",
+      "description": "Get the APK path of any installed app, then pull it to PC as a backup.",
+      "category": "files",
+      "tags": [
+        "backup",
+        "extract",
+        "apk",
+        "app"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-046",
+      "title": "adb pull /sdcard/ . 2>&1 | tail -1",
+      "command": "adb pull /sdcard/ . 2>&1 | tail -1",
+      "description": "Pull all of /sdcard/ to current directory. Shows summary of files transferred.",
+      "category": "files",
+      "tags": [
+        "backup",
+        "sync",
+        "rsync",
+        "folder"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-047",
+      "title": "adb logcat -d > device_log.txt",
+      "command": "adb logcat -d > device_log.txt",
+      "description": "Dump the current device log buffer to a file. Useful for debugging crashes.",
+      "category": "files",
+      "tags": [
+        "backup",
+        "logcat",
+        "crash",
+        "log",
+        "debug"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-048",
+      "title": "Show which apps/UIDs are consuming battery",
+      "command": "adb shell dumpsys batterystats | grep -E \"uid|wakelock|top\"",
+      "description": "Show which apps/UIDs are consuming battery. Grep filters to the important lines.",
+      "category": "battery",
+      "tags": [
+        "battery",
+        "stats",
+        "wakelock",
+        "drain",
+        "history"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-049",
+      "title": "adb shell dumpsys deviceidle enable",
+      "command": "adb shell dumpsys deviceidle enable",
+      "description": "Force enable Doze mode immediately (instead of waiting for device to be idle). Good for testing.",
+      "category": "battery",
+      "tags": [
+        "battery",
+        "doze",
+        "optimize",
+        "background"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-050",
+      "title": "adb shell dumpsys battery set level 50",
+      "command": "adb shell dumpsys battery set level 50",
+      "description": "Simulate battery level for testing. Reset with: adb shell dumpsys battery reset",
+      "category": "battery",
+      "tags": [
+        "battery",
+        "charging",
+        "simulate",
+        "fake"
+      ],
+      "examples": [],
+      "risk": "caution",
+      "source": "adb"
+    },
+    {
+      "id": "adb-051",
+      "title": "Enable Battery Saver mode",
+      "command": "adb shell settings put global low_power 1",
+      "description": "Enable Battery Saver mode. Set to 0 to disable.",
+      "category": "battery",
+      "tags": [
+        "battery",
+        "saver",
+        "power",
+        "mode"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-052",
+      "title": "Check battery temperature",
+      "command": "adb shell dumpsys battery | grep temperature",
+      "description": "Check battery temperature. Value is in tenths of degrees Celsius (e.g. 290 = 29.0\u00b0C).",
+      "category": "battery",
+      "tags": [
+        "battery",
+        "temperature",
+        "overheat",
+        "check"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-053",
+      "title": "Launch a specific activity",
+      "command": "adb shell am start -n com.package.name/.MainActivity",
+      "description": "Launch a specific activity. Great for automation and testing.",
+      "category": "input",
+      "tags": [
+        "developer",
+        "activity",
+        "app",
+        "launch"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-054",
+      "title": "Open a URL on the device from your PC",
+      "command": "adb shell am start -a android.intent.action.VIEW -d \"https://example.com\"",
+      "description": "Open a URL on the device from your PC. Works for any intent.",
+      "category": "input",
+      "tags": [
+        "developer",
+        "url",
+        "intent",
+        "browser",
+        "open"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-056",
+      "title": "adb shell input text \"Hello%sWorld\"",
+      "command": "adb shell input text \"Hello%sWorld\"",
+      "description": "Type text into the focused field. Use %s for spaces. Limited to ASCII only.",
+      "category": "input",
+      "tags": [
+        "developer",
+        "text",
+        "input",
+        "type",
+        "keyboard"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    },
+    {
+      "id": "adb-057",
+      "title": "adb shell input keyevent KEYCODE_HOME",
+      "command": "adb shell input keyevent KEYCODE_HOME",
+      "description": "Simulate button press. Common codes: HOME, BACK, MENU, POWER, VOLUME_UP, VOLUME_DOWN.",
+      "category": "input",
+      "tags": [
+        "developer",
+        "keyevent",
+        "button",
+        "home",
+        "back",
+        "menu"
+      ],
+      "examples": [],
+      "risk": "safe",
+      "source": "adb"
+    }
+  ]
+}

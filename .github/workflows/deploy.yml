@@ -3,12 +3,19 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -18,9 +25,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v4
+      - name: Validate docs PWA assets
+        run: |
+          test -f docs/index.html
+          test -f docs/manifest.webmanifest
+          test -f docs/sw.js
+          test -f docs/commands.json
+          test -f docs/app.js
+          python3 -c "import json; c=json.load(open('docs/commands.json')); assert len(c['commands'])>20"
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: docs
       - id: deployment
         uses: actions/deploy-pages@v4
