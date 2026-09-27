@@ -10,7 +10,7 @@ build/
 venv/
 .env
 *.png
+!docs/icons/*.png
 /tmp/
 .DS_Store
-cli.exe
 cli.exe
