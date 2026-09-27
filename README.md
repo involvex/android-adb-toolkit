@@ -22,7 +22,7 @@ python3 server.py --host 127.0.0.1 --port 8000
 
 ### 2. Command Finder PWA (GitHub Pages)
 
-Installable docs app for browsing/searching ADB + toolkit commands (offline-capable):
+Installable docs app for browsing/searching **280+** curated ADB + toolkit commands (offline-capable):
 
 **https://involvex.github.io/android-adb-toolkit/**
 
@@ -32,7 +32,7 @@ python3 -m http.server 5500 --directory docs
 # → http://127.0.0.1:5500/
 ```
 
-Source: [`docs/`](docs/README.md). Deployed from `docs/` via GitHub Actions (`.github/workflows/deploy.yml`).
+Source: [`docs/`](docs/README.md) (`commands.json` catalog). Deployed from `docs/` via GitHub Actions (`.github/workflows/deploy.yml`).
 
 ### 3. Python CLI
 

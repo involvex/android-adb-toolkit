@@ -1,6 +1,6 @@
 # ADB Command Finder (GitHub Pages PWA)
 
-Installable Progressive Web App that catalogs ADB commands and Android ADB Toolkit helpers.
+Installable Progressive Web App that catalogs **280+** curated ADB commands and Android ADB Toolkit helpers.
 
 ## Local preview
 

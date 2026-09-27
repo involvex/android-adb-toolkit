@@ -3,7 +3,8 @@
 ## Command Finder PWA (GitHub Pages)
 
 - Installable offline-capable app at `docs/`
-- Searchable catalog of ADB + toolkit commands with copy-to-clipboard
+- Searchable catalog of **280+** curated ADB + toolkit commands with copy-to-clipboard
+- Categories include connection, packages, activity, logcat/debug, network, settings, emulator, and more
 - URL: https://involvex.github.io/android-adb-toolkit/
 
 ## Primary web UI (`python3 server.py` → http://127.0.0.1:8000)

@@ -1,5 +1,5 @@
 /* ADB Command Finder — service worker (offline catalog + shell) */
-const CACHE = "adb-finder-v1";
+const CACHE = "adb-finder-v2";
 const ASSETS = [
   "./",
   "./index.html",

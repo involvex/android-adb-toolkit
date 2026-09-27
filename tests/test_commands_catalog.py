@@ -18,8 +18,8 @@ class CommandsCatalogTests(unittest.TestCase):
             cls.data = json.load(fh)
 
     def test_has_commands_and_categories(self):
-        self.assertGreaterEqual(len(self.data["commands"]), 40)
-        self.assertGreaterEqual(len(self.data["categories"]), 5)
+        self.assertGreaterEqual(len(self.data["commands"]), 150)
+        self.assertGreaterEqual(len(self.data["categories"]), 10)
 
     def test_command_shape(self):
         required = {"id", "title", "command", "description", "category", "tags", "source"}
@@ -38,6 +38,25 @@ class CommandsCatalogTests(unittest.TestCase):
         self.assertIn("python3 server.py", commands)
         self.assertIn("python3 -m adb_toolkit", commands)
         self.assertIn("logcat", commands.lower())
+
+    def test_no_duplicate_commands(self):
+        cmds = [c["command"].strip() for c in self.data["commands"]]
+        self.assertEqual(len(cmds), len(set(cmds)))
+
+    def test_expanded_coverage_categories(self):
+        cats = {c["category"] for c in self.data["commands"]}
+        for required in (
+            "connection",
+            "packages",
+            "logcat",
+            "network",
+            "settings",
+            "activity",
+            "emulator",
+            "debug",
+            "toolkit",
+        ):
+            self.assertIn(required, cats)
 
     def test_pwa_assets_exist(self):
         docs = ROOT / "docs"
