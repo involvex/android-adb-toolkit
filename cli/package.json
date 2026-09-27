@@ -1,7 +1,7 @@
 {
-  "name": "@outrageousstorm/adb-toolkit-cli",
+  "name": "@involvex/adb-toolkit-cli",
   "version": "1.0.0",
-  "description": "CLI companion for the ADB Toolkit web app",
+  "description": "Optional Node CLI companion for the Android ADB Toolkit web app",
   "bin": {
     "adb-toolkit": "./index.js"
   },

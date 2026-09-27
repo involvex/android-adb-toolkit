@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+__pycache__
+*.pyc
+.git
+.venv
+venv
+legacy
+tests
+*.md
+!README.md
+!API.md

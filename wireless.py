@@ -1,84 +1,77 @@
 #!/usr/bin/env python3
 """
-wireless.py -- Manage wireless ADB connections
-Connect/disconnect Android devices over WiFi without USB.
-Usage: python3 wireless.py [--connect IP] [--pair IP PIN] [--list]
+wireless.py — Manage wireless ADB connections (CLI helper).
+
+Usage:
+  python3 wireless.py --list
+  python3 wireless.py --connect 192.168.1.20 --port 5555
+  python3 wireless.py --pair 192.168.1.20 --port 37123 --code 123456
+  python3 wireless.py --disconnect 192.168.1.20:5555
 """
-import subprocess, sys, argparse, re, time
 
-def adb(cmd):
-    r = subprocess.run(f"adb {cmd}", shell=True, capture_output=True, text=True)
-    return r.stdout.strip(), r.returncode
+from __future__ import annotations
 
-def get_devices():
-    out, _ = adb("devices")
-    devices = []
-    for line in out.splitlines()[1:]:
-        parts = line.split()
-        if len(parts) >= 2 and parts[1] == "device":
-            devices.append(parts[0])
-    return devices
+import argparse
+import sys
 
-def pair_device(ip, port=5555):
-    """Get pairing code on device: Settings → Developer Options → Wireless debugging → Show pairing code"""
-    print(f"\n🔐 Pairing with {ip}:{port}")
-    print("Go to: Settings → Developer Options → Wireless debugging → Show pairing code")
-    code = input("Enter 6-digit pairing code: ").strip()
-    
-    out, rc = adb(f"pair {ip}:{port}")
-    if rc != 0:
-        print(f"Pairing failed: {out}")
-        return False
-    
-    print(f"✅ Paired with {ip}")
-    return True
+from adb_toolkit import adb as adb_lib
 
-def connect_device(ip, port=5555):
-    """Connect to already-paired device"""
-    print(f"Connecting to {ip}:{port}...")
-    out, rc = adb(f"connect {ip}:{port}")
-    if rc == 0 and "connected" in out.lower():
-        print(f"✅ Connected to {ip}")
-        return True
-    else:
-        print(f"❌ Connection failed: {out}")
-        return False
 
-def disconnect_device(ip):
-    """Disconnect wireless device"""
-    out, _ = adb(f"disconnect {ip}")
-    print(f"✅ Disconnected {ip}")
+def list_devices() -> None:
+    try:
+        devices = adb_lib.list_devices()
+    except adb_lib.AdbError as exc:
+        print(f"Error: {exc.message}", file=sys.stderr)
+        if exc.details:
+            print(exc.details, file=sys.stderr)
+        sys.exit(1)
 
-def list_devices():
-    """Show all connected devices"""
-    devices = get_devices()
     if not devices:
         print("No devices connected.")
         return
-    
-    print(f"\n📱 Connected devices ({len(devices)}):")
+
+    print(f"\nConnected devices ({len(devices)}):")
     for dev in devices:
-        is_wireless = ":" in dev
-        icon = "📡" if is_wireless else "🔌"
-        print(f"  {icon}  {dev}")
+        icon = "wireless" if dev.get("connection") == "wireless" else "usb"
+        model = dev.get("model") or ""
+        print(f"  [{icon}] {dev['serial']}  {dev['status']}  {model}")
 
-def main():
+
+def main(argv: list | None = None) -> int:
     parser = argparse.ArgumentParser(description="Wireless ADB manager")
-    parser.add_argument("--pair", metavar="IP", help="Pair with device (requires pairing code)")
+    parser.add_argument("--pair", metavar="IP", help="Pair with device IP")
     parser.add_argument("--connect", metavar="IP", help="Connect to paired device")
-    parser.add_argument("--disconnect", metavar="IP", help="Disconnect device")
-    parser.add_argument("--list", action="store_true", help="List all devices")
-    parser.add_argument("--port", type=int, default=5555)
-    args = parser.parse_args()
+    parser.add_argument("--disconnect", metavar="TARGET", help="Disconnect target or all")
+    parser.add_argument("--list", action="store_true", help="List devices")
+    parser.add_argument("--port", type=int, default=5555, help="Connect/pair port")
+    parser.add_argument("--code", help="6-digit pairing code (for --pair)")
+    args = parser.parse_args(argv)
 
-    if args.pair:
-        pair_device(args.pair, args.port)
-    elif args.connect:
-        connect_device(args.connect, args.port)
-    elif args.disconnect:
-        disconnect_device(args.disconnect)
-    elif args.list or not any([args.pair, args.connect, args.disconnect]):
+    try:
+        if args.pair:
+            code = args.code
+            if not code:
+                code = input("Enter 6-digit pairing code: ").strip()
+            result = adb_lib.wireless_pair(args.pair, args.port, code)
+            print(result.output or f"exit {result.returncode}")
+            return 0 if result.ok or "successfully" in result.output.lower() else 1
+        if args.connect:
+            result = adb_lib.wireless_connect(args.connect, args.port)
+            print(result.output or f"exit {result.returncode}")
+            return 0 if result.ok or "connected" in result.output.lower() else 1
+        if args.disconnect is not None:
+            target = args.disconnect
+            result = adb_lib.wireless_disconnect(target)
+            print(result.output or "disconnected")
+            return 0
         list_devices()
+        return 0
+    except adb_lib.AdbError as exc:
+        print(f"Error: {exc.message}", file=sys.stderr)
+        if exc.details:
+            print(exc.details, file=sys.stderr)
+        return 1
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -1,48 +1,48 @@
-# Android ADB Toolkit — Web UI Usage
+# Android ADB Toolkit — Usage
 
-## What it does
+## Run the control panel
 
-A single-page web tool for ADB power users. Point it at your device, run commands.
-
-## Features
-
-### Device Info Panel
-Shows real-time:
-- Battery level + temp
-- CPU usage
-- RAM usage
-- Storage usage
-- Network connectivity
-
-### Command Executor
-Pre-built buttons for:
-- Debloat packages
-- Grant/revoke permissions
-- Take screenshots
-- Record screen
-- Control display (brightness, DPI)
-- Manage apps
-
-### Built-in debloat lists
-One-click removal of:
-- Samsung bloatware
-- Google telemetry
-- Facebook suite
-- Ads/tracking frameworks
-
-## Requirements
-- ADB installed and in PATH
-- Device connected via USB with USB debugging enabled
-- Python 3.6+
-
-## Running
 ```bash
 python3 server.py
-# Open http://localhost:8080 in your browser
+# Open http://127.0.0.1:8000/
 ```
 
+Requires Python 3.8+ and `adb` on your `PATH`. The server binds to localhost by default.
+
+## Python CLI
+
+```bash
+python3 -m adb_toolkit devices
+python3 -m adb_toolkit info
+```
+
+Optional Node CLI: see `cli/README.md`. Older root `cli.js` / `adb-cli.*` copies are in `legacy/cli/`.
+
+## What you can do in the UI
+
+- Pick a connected device
+- View model / Android version / battery
+- List packages; clear or uninstall by package name
+- Capture and preview screenshots
+- Send taps, text, and keyevents
+- Run device shell commands
+- Pair/connect wireless debugging
+- Stream live logcat (Start/Pause/Clear) with level, tag, and package filters
+
+## API scripting
+
+```bash
+curl -s http://127.0.0.1:8000/api/devices
+curl -s http://127.0.0.1:8000/api/device/SERIAL/info
+curl -s -X POST http://127.0.0.1:8000/api/device/SERIAL/shell \
+  -H 'Content-Type: application/json' \
+  -d '{"command":"getprop ro.product.model"}'
+```
+
+Full reference: [API.md](API.md).
+
 ## Security
-- No data leaves your local machine
-- ADB commands execute on your device only
-- No external API calls
-- Works offline
+
+- Default bind is `127.0.0.1` (not exposed on the LAN)
+- No host shell execution; ADB uses argv lists with timeouts
+- Commands in the shell panel run on the Android device only

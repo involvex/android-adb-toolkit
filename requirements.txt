@@ -1,0 +1,8 @@
+# Optional dependencies for development / tests.
+# The web server itself needs only Python 3.8+ (stdlib) and ADB.
+
+# Test extras (stdlib unittest works without these):
+# pytest>=7.0
+
+# Legacy Flask-based experiments under legacy/ may need:
+# flask>=2.0
