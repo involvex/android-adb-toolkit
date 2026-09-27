@@ -1,13 +1,22 @@
 {
-  "name": "adb-toolkit-cli",
-  "version": "1.0.0",
-  "description": "Command-line ADB toolkit",
-  "main": "cli.js",
+  "name": "android-adb-toolkit",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Web-based Android ADB control panel (Python server). Optional Node CLI lives in ./cli/",
+  "scripts": {
+    "start": "python3 server.py",
+    "cli": "node cli/index.js",
+    "test": "python3 -m unittest discover -s tests -v"
+  },
   "bin": {
-    "adb-toolkit": "./cli.js"
+    "adb-toolkit": "./cli/index.js"
   },
   "keywords": [
     "adb",
-    "android"
-  ]
+    "android",
+    "toolkit"
+  ],
+  "engines": {
+    "node": ">=16"
+  }
 }

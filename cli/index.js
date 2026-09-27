@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * adb-toolkit CLI — Node.js companion for OutrageousStorm/android-adb-toolkit
- * Install: npm install -g . (from cli/ directory)
+ * adb-toolkit CLI — optional Node.js companion
+ * Install: cd cli && npm install && npm link
  * Usage:   adb-toolkit info
- *          adb-toolkit debloat --profile samsung
  *          adb-toolkit perms --pkg com.facebook.katana
  *          adb-toolkit screenshot
+ *
+ * Canonical Python paths: python3 server.py  |  python3 -m adb_toolkit
  */
 const { execSync, spawn } = require('child_process');
 const { program } = require('commander');

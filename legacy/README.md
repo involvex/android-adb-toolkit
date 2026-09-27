@@ -2,29 +2,43 @@
 
 These files are **kept for reference** but are **not** the supported way to run the toolkit.
 
-## Canonical path (use this)
+## Canonical paths (use these)
 
 ```bash
+# Web UI + API
 python3 server.py
 # → http://127.0.0.1:8000/
+
+# Python CLI (safe helpers)
+python3 -m adb_toolkit devices
+python3 -m adb_toolkit info
+
+# Optional Node CLI
+cd cli && npm install && npm link
+adb-toolkit info
 ```
 
 Primary code lives in:
 
-- `adb_toolkit/` — ADB helpers + HTTP API
+- `adb_toolkit/` — ADB helpers, HTTP API, Python CLI
 - `static/index.html` — web UI
-- `server.py` — launcher
+- `server.py` — web launcher
+- `cli/` — optional Node CLI package
+- `tools/`, `scripts/`, `wireless.py` — specialized helpers
 
 ## What moved here
+
+### Web / servers (`legacy/`)
 
 | File | Why deprecated |
 |------|----------------|
 | `web-ui.html`, `web-ui-v2.html`, `web-dashboard.html`, `dashboard.html` | Overlapping UIs pointed at different/missing backends |
-| `index.html` | Static cheatsheet only (no live API) |
+| `index-cheatsheet.html` | Static cheatsheet only (no live API) |
 | `adb_rest_server.py`, `api_server.py`, `web-ui.py`, `server.js` | Alternate servers with inconsistent ports/routes |
 | `pm-helper.py` | Empty stub |
-| Other assorted HTML helpers | Superseded by `static/index.html` panels |
 
-CLI helpers under `tools/`, `scripts/`, and root utilities such as `wireless.py` remain supported as optional scripts — see the main README.
+### Root CLI maze (`legacy/cli/`)
 
-Root shims (`adb_rest_server.py`, `adb-session-manager.py`) print a deprecation notice and forward to the canonical entrypoints.
+Near-duplicate Python/JS/TS CLIs (`cli.py`, `cli.js`, `adb-cli.*`, …). See [`cli/README.md`](cli/README.md).
+
+Root may still contain **thin shims** that forward to `python3 -m adb_toolkit` or print a deprecation notice.

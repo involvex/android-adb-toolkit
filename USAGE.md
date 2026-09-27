@@ -9,6 +9,15 @@ python3 server.py
 
 Requires Python 3.8+ and `adb` on your `PATH`. The server binds to localhost by default.
 
+## Python CLI
+
+```bash
+python3 -m adb_toolkit devices
+python3 -m adb_toolkit info
+```
+
+Optional Node CLI: see `cli/README.md`. Older root `cli.js` / `adb-cli.*` copies are in `legacy/cli/`.
+
 ## What you can do in the UI
 
 - Pick a connected device

@@ -16,11 +16,13 @@
 
 Documented in [API.md](API.md). Health check: `GET /api/health`.
 
-## Optional helpers
+## CLI
 
-- `wireless.py` — CLI wireless pair/connect
-- `tools/adb-session-manager.py` — multi-device session summary
-- `scripts/adb-device-monitor.sh` — CPU/memory/battery monitor
+- `python3 -m adb_toolkit` — canonical Python CLI (devices, info, packages, shell, screenshot, install)
+- `cli/` — optional Node CLI (`adb-toolkit` after `npm link`)
+- `wireless.py` — wireless pair/connect
+- `tools/`, `scripts/` — specialized helpers
+- `legacy/cli/` — deprecated root CLI duplicates
 
 ## ADB requirement
 

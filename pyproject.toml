@@ -17,6 +17,7 @@ dependencies = []
 dev = []
 
 [project.scripts]
+adb-toolkit = "adb_toolkit.cli:main"
 adb-toolkit-server = "adb_toolkit.server:main"
 
 [tool.setuptools.packages.find]

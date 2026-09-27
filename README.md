@@ -2,7 +2,9 @@
 
 Web-based ADB control panel — manage Android devices from your browser.
 
-## Recommended start (canonical)
+## How to run
+
+### 1. Web UI + API (primary)
 
 ```bash
 # Requires: Python 3.8+ and `adb` on your PATH
@@ -11,12 +13,35 @@ python3 server.py
 # Open http://127.0.0.1:8000/
 ```
 
-The server binds to **127.0.0.1:8000** by default (local only). Override with:
+Binds to **127.0.0.1:8000** by default (local only):
 
 ```bash
 python3 server.py --host 127.0.0.1 --port 8000
 # or: ADB_TOOLKIT_PORT=9000 python3 server.py
 ```
+
+### 2. Python CLI
+
+```bash
+python3 -m adb_toolkit devices
+python3 -m adb_toolkit info
+python3 -m adb_toolkit packages --type user
+python3 -m adb_toolkit shell "getprop ro.product.model"
+python3 -m adb_toolkit screenshot -o screen.png
+python3 -m adb_toolkit install app.apk
+
+# Equivalent shims: python3 cli.py …   /   python3 adb-cli.py …
+```
+
+### 3. Optional Node CLI
+
+```bash
+cd cli && npm install && npm link
+adb-toolkit info
+adb-toolkit screenshot -o screen.png
+```
+
+See [`cli/README.md`](cli/README.md).
 
 ### Docker (optional)
 
@@ -24,7 +49,6 @@ python3 server.py --host 127.0.0.1 --port 8000
 docker build -t android-adb-toolkit .
 docker run --rm -p 8000:8000 --network host android-adb-toolkit
 # On Linux, --network host lets the container use the host ADB server.
-# Otherwise mount/forward ADB as appropriate for your setup.
 ```
 
 ## Features
@@ -32,9 +56,9 @@ docker run --rm -p 8000:8000 --network host android-adb-toolkit
 - Device info dashboard (multi-device selector)
 - App list / uninstall / clear data
 - Screen control (tap, text, keyevents)
-- **Screenshot preview in the UI**
-- **Shell executor panel** (device shell only; no host shell)
-- **Wireless ADB pair / connect / disconnect**
+- Screenshot preview in the UI
+- Shell executor panel (device shell only; no host shell)
+- Wireless ADB pair / connect / disconnect
 - Live logcat streaming (SSE) with level/tag/package filters
 - Dark / light theme, responsive layout
 - JSON REST API with consistent error shapes
@@ -43,13 +67,14 @@ docker run --rm -p 8000:8000 --network host android-adb-toolkit
 
 | Path | Role |
 |------|------|
-| `server.py` | **Start here** — launches the web UI + API |
-| `adb_toolkit/` | Safe ADB helpers + HTTP server |
+| `server.py` | **Primary** — web UI + API |
+| `adb_toolkit/` | Safe ADB helpers, HTTP server, **Python CLI** |
 | `static/index.html` | Primary web UI |
+| `cli/` | Optional Node CLI (`adb-toolkit`) |
+| `wireless.py` | Wireless ADB CLI helper |
+| `tools/`, `scripts/` | Specialized helpers |
 | `API.md` | REST API reference |
-| `tools/`, `scripts/` | Optional CLI helpers |
-| `wireless.py` | Wireless ADB CLI |
-| `legacy/` | Older duplicate UIs/servers (not supported) |
+| `legacy/` | Deprecated UIs / servers / root CLI copies |
 | `tests/` | Automated tests (mocked ADB) |
 
 ## Requirements
@@ -58,10 +83,11 @@ docker run --rm -p 8000:8000 --network host android-adb-toolkit
 - [Android platform-tools](https://developer.android.com/tools/releases/platform-tools) (`adb` in `PATH`)
 - Device with USB debugging (or wireless debugging) enabled
 
-No pip packages are required to run the server. For a local install of the package metadata:
+No pip packages are required to run the server. Optional editable install:
 
 ```bash
 pip install -e .
+# then: adb-toolkit devices   /   adb-toolkit-server
 ```
 
 ## API (summary)
@@ -84,7 +110,7 @@ See [API.md](API.md) for full documentation.
 python3 -m unittest discover -s tests -v
 ```
 
-## Optional CLI helpers
+## Other helpers
 
 ```bash
 python3 wireless.py --list
@@ -102,4 +128,4 @@ python3 tools/adb-session-manager.py
 
 ## Legacy files
 
-Older overlapping dashboards and servers live under [`legacy/`](legacy/README.md). Prefer `python3 server.py`.
+Older overlapping dashboards, servers, and root CLI duplicates live under [`legacy/`](legacy/README.md) (including [`legacy/cli/`](legacy/cli/README.md)). Prefer `python3 server.py` and `python3 -m adb_toolkit`.
